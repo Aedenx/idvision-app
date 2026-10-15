@@ -1,34 +1,8 @@
 {
-  "builds": [
+  "rewrites": [
     {
-      "src": "glasses-store-frontend/package.json",
-      "use": "@vercel/next"
-    },
-    {
-      "src": "admin/**/*.php",
-      "use": "vercel-php@0.6.0"
-    },
-    {
-      "src": "backend/**/*.php",
-      "use": "vercel-php@0.6.0"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/admin/(.*)",
-      "dest": "/admin/$1"
-    },
-    {
-      "src": "/admin",
-      "dest": "/admin/index.php"
-    },
-    {
-      "src": "/backend/api/(.*)",
-      "dest": "/backend/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/glasses-store-frontend/$1"
+      "source": "/(.*)",
+      "destination": "/glasses-store-frontend/$1"
     }
   ]
 }

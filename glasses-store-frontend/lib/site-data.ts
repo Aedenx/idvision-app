@@ -1,5 +1,7 @@
-// Base URL Backend PHP Laragon
-const API_BASE_URL = "http://localhost/idvision/backend/api";
+// Base URL Backend PHP (Mendukung Vercel & Localhost)
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ikhwanvision.freedev.app/backend/api";
 
 export interface Banner {
   id: number;
@@ -30,11 +32,17 @@ export async function getSiteSettings(): Promise<Record<string, string>> {
 }
 
 /**
- * Mengambil Banner Carousel
+ * Mengambil Banner Carousel dari API PHP
  */
 export async function getBanners(): Promise<Banner[]> {
   try {
-    return [];
+    const res = await fetch(`${API_BASE_URL}/banners/index.php`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+
+    const result = await res.json();
+    return result.data || [];
   } catch (error) {
     console.error("Error fetching banners:", error);
     return [];
@@ -42,7 +50,7 @@ export async function getBanners(): Promise<Banner[]> {
 }
 
 /**
- * Mengambil Katalog Produk dari API PHP Laragon
+ * Mengambil Katalog Produk dari API PHP
  */
 export async function getProducts(params?: {
   category?: string;
@@ -109,8 +117,8 @@ export async function getProducts(params?: {
 
       // Pemetaan Alias Kata Kunci Pencarian
       if (q === "anak" || q === "anak-anak") q = "kids";
-      if (q === "pria" || q === "laki-laki" || q === "cowok") q = "pria"; // atau "men" jika kategori DB berupa Men
-      if (q === "wanita" || q === "perempuan" || q === "cewek") q = "wanita"; // atau "women" jika kategori DB berupa Women
+      if (q === "pria" || q === "laki-laki" || q === "cowok") q = "pria";
+      if (q === "wanita" || q === "perempuan" || q === "cewek") q = "wanita";
 
       mappedData = mappedData.filter((p: any) => {
         const nameMatch = p.name.toLowerCase().includes(q);
@@ -119,7 +127,6 @@ export async function getProducts(params?: {
         const categorySlugMatch = p.category_slug.toLowerCase().includes(q);
         const genderMatch = p.gender.toLowerCase().includes(q);
 
-        // Jika pencarian cocok dengan Nama, SKU, atau Kategori Produk
         return (
           nameMatch ||
           skuMatch ||

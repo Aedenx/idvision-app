@@ -1,4 +1,6 @@
-const BASE_URL = "http://localhost/idvision/backend/api";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ikhwanvision.freedev.app/backend/api";
 
 export async function getProducts(params?: {
   gender?: string;
@@ -118,6 +120,7 @@ export async function getProductsApi() {
 export async function getProductBySlugApi(slug: string) {
   return await getProductBySlugFromApi(slug);
 }
+
 export async function processCheckout(payload: {
   customer_name: string;
   customer_email?: string;
@@ -132,16 +135,13 @@ export async function processCheckout(payload: {
   }>;
 }) {
   try {
-    const res = await fetch(
-      "http://localhost/idvision/backend/api/orders/checkout.php",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+    const res = await fetch(`${BASE_URL}/orders/checkout.php`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(payload),
+    });
 
     return await res.json();
   } catch (error) {

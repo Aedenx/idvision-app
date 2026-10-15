@@ -6,7 +6,8 @@ function getDbConnection() {
 
     if ($pdo === null) {
         try {
-            $dbUrl = "pgsql:postgresql://postgres.pikxqcmqhfxeqanozix:Muhammadikhwan1@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres";
+            // Ubah 'ap-northeast-1' menjadi 'ap-southeast-1' (Singapore Region)
+            $dbUrl = "pgsql:postgresql://postgres.pikxqcmqhfxeqanozix:Muhammadikhwan1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
             
             $pdo = new PDO($dbUrl);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

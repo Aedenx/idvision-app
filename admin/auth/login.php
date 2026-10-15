@@ -1,214 +1,136 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../backend/config/database.php';
 
-// Jika sudah login, langsung alihkan ke dashboard produk
-if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-    header("Location: ../products/index.php");
-    exit;
-}
+// Import konfigurasi BASE_URL dan koneksi database
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../config/database.php';
 
 $error = '';
 
+// Jika sudah login sebagai admin, langsung lempar ke halaman produk
+if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+    header('Location: ' . BASE_URL . '/admin/products/index.php');
+    exit();
+}
+
+// Proses Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    if (!empty($username) && !empty($password)) {
-        $pdo = getDbConnection();
-        
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :u LIMIT 1");
-        $stmt->execute(['u' => $username]);
-        $user = $stmt->fetch();
+    if (!empty($email) && !empty($password)) {
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email AND role = 'admin' LIMIT 1");
+            $stmt->execute(['email' => $email]);
+            $user = $stmt->fetch();
 
-        if ($user) {
-            $isPasswordValid = false;
+            if ($user && password_verify($password, $user['password_hash'])) {
+                if ((int)$user['is_active'] === 1) {
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['full_name'] = $user['full_name'];
+                    $_SESSION['email'] = $user['email'];
+                    $_SESSION['role'] = $user['role'];
 
-            // 1. Pengecekan password_verify bawaan PHP
-            if (password_verify($password, $user['password_hash'])) {
-                $isPasswordValid = true;
-            } 
-            // 2. Bypass & auto-update hash jika input 'admin123'
-            elseif ($password === 'admin123') {
-                $isPasswordValid = true;
-                
-                $newHash = password_hash('admin123', PASSWORD_BCRYPT);
-                $stmtFix = $pdo->prepare("UPDATE users SET password_hash = :ph WHERE user_id = :uid");
-                $stmtFix->execute(['ph' => $newHash, 'uid' => $user['user_id']]);
-            }
-
-            if ($isPasswordValid) {
-                if ($user['role'] !== 'admin') {
-                    $error = "Akses ditolak. Akun ini bukan bertipe admin!";
-                } elseif ((int)$user['is_active'] !== 1) {
-                    $error = "Akun admin ini sedang dinonaktifkan!";
+                    header('Location: ' . BASE_URL . '/admin/products/index.php');
+                    exit();
                 } else {
-                    // Login Sukses
-                    $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['admin_id']        = $user['user_id'];
-                    $_SESSION['admin_name']      = $user['full_name'];
-                    
-                    header("Location: ../products/index.php");
-                    exit;
+                    $error = 'Akun Anda dinonaktifkan. Silakan hubungi pengelola.';
                 }
             } else {
-                $error = "Password yang kamu masukkan salah!";
+                $error = 'Email atau password salah, atau Anda bukan Administrator.';
             }
-        } else {
-            $error = "Email admin tidak ditemukan!";
+        } catch (PDOException $e) {
+            $error = 'Gagal memproses login: ' . $e->getMessage();
         }
     } else {
-        $error = 'Harap isi Email dan Password!';
+        $error = 'Harap isi email dan password secara lengkap.';
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="id" data-bs-theme="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - IDVISION Admin</title>
-
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap 5 & Icons -->
+    <title>Login Administrator - IDVISION</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        :root {
-            --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
-            --amber-500: #f59e0b;
-            --amber-600: #d97706;
-            --amber-400: #fbbf24;
-            --bg-deep-black: #030712;
-            --card-slate-dark: #090d16;
-            --border-slate-dark: #1f2937;
-        }
-
         body {
-            font-family: var(--font-family-sans);
-            background-color: var(--bg-deep-black);
-            color: #f3f4f6;
+            background-color: #0f172a;
+            color: #f8fafc;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            letter-spacing: -0.01em;
         }
-
         .login-card {
-            background-color: var(--card-slate-dark);
-            border: 1px solid var(--border-slate-dark);
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
             width: 100%;
             max-width: 420px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
-
         .form-control {
-            background-color: #111827;
-            border: 1px solid var(--border-slate-dark);
-            color: #f3f4f6;
-            border-radius: 0.5rem;
-            padding: 0.65rem 0.85rem;
-            font-size: 0.875rem;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            color: #f8fafc;
         }
-
         .form-control:focus {
-            background-color: #111827;
-            border-color: var(--amber-500);
-            box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.15);
-            color: #ffffff;
+            background-color: #0f172a;
+            border-color: #eab308;
+            color: #f8fafc;
+            box-shadow: 0 0 0 0.25rem rgba(234, 179, 8, 0.25);
         }
-
-        .btn-filament {
-            background-color: var(--amber-500);
-            border-color: var(--amber-500);
-            color: #000000;
+        .btn-gold {
+            background-color: #eab308;
+            color: #0f172a;
             font-weight: 600;
-            border-radius: 0.5rem;
-            padding: 0.65rem;
-            transition: all 0.15s ease-in-out;
         }
-
-        .btn-filament:hover {
-            background-color: var(--amber-600);
-            border-color: var(--amber-600);
-            color: #ffffff;
-        }
-
-        .brand-icon {
-            width: 42px;
-            height: 42px;
-            background-color: var(--amber-500);
-            color: #000000;
-            border-radius: 0.6rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        .btn-gold:hover {
+            background-color: #ca8a04;
+            color: #0f172a;
         }
     </style>
 </head>
 <body>
 
-<div class="container p-3">
-    <div class="login-card mx-auto p-4 p-sm-5">
-        
-        <!-- Header Logo Brand -->
-        <div class="text-center mb-4">
-            <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
-                <?php 
-                    $logoPath = __DIR__ . '/../assets/images/logo.png';
-                    if (file_exists($logoPath)): 
-                ?>
-                    <img src="/admin/assets/images/logo.png" alt="IDVISION Logo" class="img-fluid" style="max-height: 42px;">
-                <?php else: ?>
-                    <div class="brand-icon fw-bold">
-                        <i class="bi bi-eyeglasses"></i>
-                    </div>
-                <?php endif; ?>
-                <span class="fw-bold fs-4 text-white tracking-tight">IDVISION</span>
-            </div>
-            <p class="text-muted fs-7 m-0">Masuk ke Filament Management Panel</p>
-        </div>
-
-        <!-- Alert Error Message -->
-        <?php if (!empty($error)): ?>
-            <div class="alert alert-danger border-0 bg-danger-subtle text-danger fs-8 py-2.5 px-3 rounded-3 mb-4 d-flex align-items-center gap-2">
-                <i class="bi bi-exclamation-triangle-fill fs-6"></i>
-                <div><?= htmlspecialchars($error) ?></div>
-            </div>
-        <?php endif; ?>
-
-        <!-- Form Login -->
-        <form action="" method="POST">
-            <div class="mb-3">
-                <label class="form-label fs-8 fw-semibold text-body mb-1">Email Admin</label>
-                <input type="email" name="username" class="form-control" value="admin@idvision.com" placeholder="admin@idvision.com" required autofocus>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label fs-8 fw-semibold text-body mb-1">Password</label>
-                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-            </div>
-
-            <button type="submit" class="btn btn-filament w-100 fs-7 d-flex align-items-center justify-content-center gap-2">
-                <span>Sign In</span>
-                <i class="bi bi-arrow-right fs-6"></i>
-            </button>
-        </form>
-
-        <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-10">
-            <small class="text-muted fs-8">&copy; <?= date('Y') ?> IDVISION Eyewear System</small>
-        </div>
-
+<div class="login-card">
+    <div class="text-center mb-4">
+        <h3 class="fw-bold text-warning mb-1"><i class="bi bi-glasses me-2"></i>IDVISION</h3>
+        <p class="text-secondary small">Masuk ke Panel Kontrol Administrator</p>
     </div>
+
+    <?php if (!empty($error)): ?>
+        <div class="alert alert-danger py-2 fs-7" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> <?= htmlspecialchars($error) ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- Action Form Menggunakan BASE_URL Dinamis -->
+    <form action="<?= BASE_URL ?>/admin/auth/login.php" method="POST">
+        <div class="mb-3">
+            <label for="email" class="form-label small text-secondary">Alamat Email</label>
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-envelope"></i></span>
+                <input type="email" class="form-control" id="email" name="email" placeholder="admin@idvision.com" required>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="password" class="form-label small text-secondary">Password</label>
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-lock"></i></span>
+                <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-gold w-100 py-2">
+            Sign In <i class="bi bi-box-arrow-in-right ms-1"></i>
+        </button>
+    </form>
 </div>
 
 </body>

@@ -1,10 +1,10 @@
 <?php
-// backend/config/database.php
+// backend/config/database.php atau admin/config/database.php
 
 define('DB_HOST', 'db.pikxqcmqhfXeqanozix.supabase.co');
 define('DB_PORT', '5432');
 define('DB_USER', 'postgres');
-define('DB_PASS', 'Muhammadikhwan1'); // Masukkan password database Supabase Anda di sini
+define('DB_PASS', 'Muhammadikhwan1'); // Ganti dengan password Supabase Anda
 define('DB_NAME', 'postgres');
 
 function getDbConnection() {

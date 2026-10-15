@@ -1,14 +1,24 @@
 {
   "functions": {
-    "api/**/*.php": {
+    "admin/**/*.php": {
       "runtime": "vercel-php@0.6.0"
     },
-    "admin/**/*.php": {
+    "backend/**/*.php": {
       "runtime": "vercel-php@0.6.0"
     }
   },
   "routes": [
-    { "src": "/backend/api/(.*)", "dest": "/backend/api/$1" },
-    { "src": "/admin/(.*)", "dest": "/admin/$1" }
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin/$1"
+    },
+    {
+      "src": "/admin",
+      "dest": "/admin/index.php"
+    },
+    {
+      "src": "/backend/api/(.*)",
+      "dest": "/backend/api/$1"
+    }
   ]
 }

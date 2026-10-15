@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../backend/config/database.php';
+require_once __DIR__ . '/../../backend/config/database.php';
 
 // Jika sudah login, langsung alihkan ke dashboard produk
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
@@ -164,10 +164,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="text-center mb-4">
             <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
                 <?php 
-                    $logoPath = $_SERVER['DOCUMENT_ROOT'] . '/idvision/admin/assets/images/logo.png';
+                    $logoPath = __DIR__ . '/../assets/images/logo.png';
                     if (file_exists($logoPath)): 
                 ?>
-                    <img src="/idvision/admin/assets/images/logo.png" alt="IDVISION Logo" class="img-fluid" style="max-height: 42px;">
+                    <img src="/admin/assets/images/logo.png" alt="IDVISION Logo" class="img-fluid" style="max-height: 42px;">
                 <?php else: ?>
                     <div class="brand-icon fw-bold">
                         <i class="bi bi-eyeglasses"></i>

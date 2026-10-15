@@ -6,7 +6,7 @@ function getDbConnection() {
 
     if ($pdo === null) {
         try {
-            // URL Transaction Pooler Supabase yang benar
+            // URL Transaction Pooler Supabase
             $dbUrl = "pgsql:postgresql://postgres.pikxqcmqhfxeqanozix:Muhammadikhwan1@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres";
             
             $pdo = new PDO($dbUrl);

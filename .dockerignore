@@ -1,0 +1,4 @@
+glasses-store-frontend/node_modules
+glasses-store-frontend/.next
+.git
+.gitignore

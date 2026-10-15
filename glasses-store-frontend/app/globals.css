@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* PERBAIKAN UTAMA: Beritahu Tailwind CSS v4 untuk merespons class .dark */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Variabel Warna Dasar */
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+html.dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Running Text (Marquee) */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-33.33%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

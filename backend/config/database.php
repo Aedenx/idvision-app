@@ -6,7 +6,7 @@ function getDbConnection() {
 
     if ($pdo === null) {
         try {
-            // Ubah 'ap-northeast-1' menjadi 'ap-southeast-1' (Singapore Region)
+            // Perhatikan regionnya: 'aws-0-ap-southeast-1' (Singapore)
             $dbUrl = "pgsql:postgresql://postgres.pikxqcmqhfxeqanozix:Muhammadikhwan1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
             
             $pdo = new PDO($dbUrl);

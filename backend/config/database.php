@@ -6,11 +6,11 @@ function getDbConnection() {
 
     if ($pdo === null) {
         try {
-            // Gunakan Host Tokyo (aws-0-ap-northeast-1) & Port 5432 sesuai screenshot Supabase
             $host     = 'aws-0-ap-northeast-1.pooler.supabase.com';
             $port     = '5432';
             $dbname   = 'postgres';
-            $user     = 'postgres.pikxqcmqhfxeqanozix'; // Tenant identifier wajib ada
+            // Username presisi dengan ID project asli (pikxqcmqxhfxeqanozix)
+            $user     = 'postgres.pikxqcmqxhfxeqanozix'; 
             $password = 'Muhammadikhwan1';
 
             $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;user=$user;password=$password";

@@ -6,12 +6,20 @@ function getDbConnection() {
 
     if ($pdo === null) {
         try {
-            // Perhatikan regionnya: 'aws-0-ap-southeast-1' (Singapore)
-            $dbUrl = "pgsql:postgresql://postgres.pikxqcmqhfxeqanozix:Muhammadikhwan1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
-            
-            $pdo = new PDO($dbUrl);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            $host = 'aws-0-ap-southeast-1.pooler.supabase.com';
+            $port = '6543';
+            $dbname = 'postgres';
+            $user = 'postgres.pikxqcmqhfxeqanozix';
+            $password = 'Muhammadikhwan1';
+
+            // Format DSN PDO PostgreSQL yang valid
+            $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;user=$user;password=$password";
+
+            $pdo = new PDO($dsn, null, null, [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ]);
         } catch (PDOException $e) {
             http_response_code(500);
             echo json_encode([

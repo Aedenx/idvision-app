@@ -2,6 +2,12 @@ const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://ikhwanvision.freedev.app/backend/api";
 
+const FETCH_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "application/json",
+};
+
 export async function getProducts(params?: {
   gender?: string;
   search?: string;
@@ -18,7 +24,10 @@ export async function getProducts(params?: {
     }
 
     const url = `${BASE_URL}/products/index.php?${queryParams.toString()}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: FETCH_HEADERS,
+    });
 
     if (!res.ok) return { data: [] };
 
@@ -69,7 +78,10 @@ export async function getProductBySlugFromApi(slugOrId: string) {
   try {
     const res = await fetch(
       `${BASE_URL}/products/index.php?slug=${encodeURIComponent(slugOrId)}`,
-      { cache: "no-store" },
+      {
+        cache: "no-store",
+        headers: FETCH_HEADERS,
+      },
     );
 
     if (!res.ok) return null;
@@ -139,6 +151,7 @@ export async function processCheckout(payload: {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...FETCH_HEADERS,
       },
       body: JSON.stringify(payload),
     });

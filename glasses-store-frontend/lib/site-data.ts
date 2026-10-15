@@ -3,6 +3,12 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://ikhwanvision.freedev.app/backend/api";
 
+const FETCH_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "application/json",
+};
+
 export interface Banner {
   id: number;
   title: string;
@@ -38,6 +44,7 @@ export async function getBanners(): Promise<Banner[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/banners/index.php`, {
       cache: "no-store",
+      headers: FETCH_HEADERS,
     });
     if (!res.ok) return [];
 
@@ -79,7 +86,10 @@ export async function getProducts(params?: {
     }
 
     const url = `${API_BASE_URL}/products/index.php?${queryParams.toString()}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: FETCH_HEADERS,
+    });
 
     if (!res.ok) return { data: [] };
 

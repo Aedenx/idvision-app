@@ -1,11 +1,16 @@
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ikhwanvision.freedev.app/backend/api";
-
-const FETCH_HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  Accept: "application/json",
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    // Saat berjalan di browser pengguna
+    return (
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://ikhwanvision.freedev.app/backend/api"
+    );
+  }
+  // Fallback saat build time
+  return (
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://ikhwanvision.freedev.app/backend/api"
+  );
 };
 
 export async function getProducts(params?: {
@@ -23,10 +28,15 @@ export async function getProducts(params?: {
       else queryParams.append("category", g);
     }
 
-    const url = `${BASE_URL}/products/index.php?${queryParams.toString()}`;
+    const url = `${getBaseUrl()}/products/index.php?${queryParams.toString()}`;
+
+    // fetch langsung dari browser
     const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
       cache: "no-store",
-      headers: FETCH_HEADERS,
     });
 
     if (!res.ok) return { data: [] };
@@ -34,7 +44,6 @@ export async function getProducts(params?: {
     const result = await res.json();
     const rawData = result.data || [];
 
-    // Map data API PHP ke format yang dibaca oleh ProductCard / Frontend
     let mappedData = rawData.map((item: any) => ({
       id: item.product_id,
       product_id: item.product_id,
@@ -77,11 +86,8 @@ export async function getProducts(params?: {
 export async function getProductBySlugFromApi(slugOrId: string) {
   try {
     const res = await fetch(
-      `${BASE_URL}/products/index.php?slug=${encodeURIComponent(slugOrId)}`,
-      {
-        cache: "no-store",
-        headers: FETCH_HEADERS,
-      },
+      `${getBaseUrl()}/products/index.php?slug=${encodeURIComponent(slugOrId)}`,
+      { cache: "no-store" },
     );
 
     if (!res.ok) return null;
@@ -147,11 +153,10 @@ export async function processCheckout(payload: {
   }>;
 }) {
   try {
-    const res = await fetch(`${BASE_URL}/orders/checkout.php`, {
+    const res = await fetch(`${getBaseUrl()}/orders/checkout.php`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...FETCH_HEADERS,
       },
       body: JSON.stringify(payload),
     });

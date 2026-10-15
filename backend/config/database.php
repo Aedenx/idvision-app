@@ -6,9 +6,8 @@ function getDbConnection() {
 
     if ($pdo === null) {
         try {
-            // Tempelkan Connection String URI dari Transaction Pooler di sini:
-            // Jangan lupa ganti YOUR_PASSWORD dengan password Supabase kamu yang asli!
-            $dbUrl = "postgresql://postgres.pikxqcmqxhfxeqanozix:[Muhammadikhwan1]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres";
+            // Ditambahkan prefix 'pgsql:' dan kurung siku pada password dihapus
+            $dbUrl = "pgsql:postgresql://postgres.pikxqcmqhfxeqanozix:Muhammadikhwan1@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres";
             
             $pdo = new PDO($dbUrl);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

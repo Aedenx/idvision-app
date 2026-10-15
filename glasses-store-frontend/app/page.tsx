@@ -1,4 +1,4 @@
-"use client";
+"use "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -16,10 +16,44 @@ import RunningText from "@/components/home/running-text";
 import HeroSlider from "@/components/layout/hero-slider";
 import ProductCard from "@/components/product/product-card";
 
-// Ambil Base URL dari Environment Variable Vercel dengan fallback ke domain InfinityFree
-const API_BASE_URL =
+// URL API Asli
+const DIRECT_API_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://ikhwanvision.freedev.app/backend/api";
+
+// Helper Fetcher dengan Proxy Fallback otomatis
+async function fetchWithFallback(endpointPath: string) {
+  const targetUrl = `${DIRECT_API_URL}${endpointPath}`;
+
+  // 1. Coba fetch langsung dari browser
+  try {
+    const res = await fetch(targetUrl, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.data) return json.data;
+    }
+  } catch (err) {
+    console.warn("Direct fetch blocked/failed, trying CORS proxy...", err);
+  }
+
+  // 2. Jika gagal/terblokir, panggil via AllOrigins Proxy
+  try {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+    const resProxy = await fetch(proxyUrl);
+    if (resProxy.ok) {
+      const proxyJson = await resProxy.json();
+      const realData = JSON.parse(proxyJson.contents);
+      return realData.data || [];
+    }
+  } catch (proxyErr) {
+    console.error("Proxy fetch juga gagal:", proxyErr);
+  }
+
+  return [];
+}
 
 export default function HomePage() {
   const [promoProducts, setPromoProducts] = useState<any[]>([]);
@@ -28,50 +62,32 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Fetch Produk untuk Promo & Terpopuler dari browser (Client-Side)
-    fetch(`${API_BASE_URL}/products/index.php`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData && resData.data) {
-          const allProducts = resData.data;
+    async function loadData() {
+      setLoading(true);
 
-          // Filter Produk Promo (diskon > 0), ambil maksimal 4 item
-          const promo = allProducts
-            .filter((p: any) => Number(p.discount_percent || 0) > 0)
-            .slice(0, 4);
+      // Fetch Produk
+      const allProducts = await fetchWithFallback("/products/index.php");
+      if (Array.isArray(allProducts) && allProducts.length > 0) {
+        const promo = allProducts
+          .filter((p: any) => Number(p.discount_percent || 0) > 0)
+          .slice(0, 4);
 
-          // Ambil 4 produk terpopuler/teratas
-          const popular = allProducts.slice(0, 4);
+        const popular = allProducts.slice(0, 4);
 
-          setPromoProducts(promo.length > 0 ? promo : allProducts.slice(0, 4));
-          setPopularProducts(popular);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Gagal mengambil data produk:", err);
-        setLoading(false);
-      });
+        setPromoProducts(promo.length > 0 ? promo : allProducts.slice(0, 4));
+        setPopularProducts(popular);
+      }
 
-    // 2. Fetch Kategori dari browser (Client-Side)
-    fetch(`${API_BASE_URL}/categories/index.php`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData && resData.data) {
-          setCategories(resData.data);
-        }
-      })
-      .catch((err) => console.error("Gagal mengambil data kategori:", err));
+      // Fetch Kategori
+      const allCategories = await fetchWithFallback("/categories/index.php");
+      if (Array.isArray(allCategories) && allCategories.length > 0) {
+        setCategories(allCategories);
+      }
+
+      setLoading(false);
+    }
+
+    loadData();
   }, []);
 
   return (

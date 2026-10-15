@@ -6,11 +6,10 @@ function getDbConnection() {
 
     if ($pdo === null) {
         try {
-            // Gunakan Session Pooler (Port 5432) Supabase yang mendukung IPv4 & Username standar
             $host = 'aws-0-ap-southeast-1.pooler.supabase.com';
-            $port = '5432'; // Port 5432 biasa
+            $port = '5432';
             $dbname = 'postgres';
-            $user = 'postgres'; // Username standar tanpa prefix project ID
+            $user = 'postgres';
             $password = 'Muhammadikhwan1';
 
             $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;user=$user;password=$password";

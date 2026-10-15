@@ -16,6 +16,11 @@ import RunningText from "@/components/home/running-text";
 import HeroSlider from "@/components/layout/hero-slider";
 import ProductCard from "@/components/product/product-card";
 
+// Ambil Base URL dari Environment Variable Vercel dengan fallback ke domain InfinityFree
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ikhwanvision.freedev.app/backend/api";
+
 export default function HomePage() {
   const [promoProducts, setPromoProducts] = useState<any[]>([]);
   const [popularProducts, setPopularProducts] = useState<any[]>([]);
@@ -23,19 +28,24 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Fetch Produk untuk Promo & Terpopuler
-    fetch("http://localhost/idvision/backend/api/products/index.php")
+    // 1. Fetch Produk untuk Promo & Terpopuler dari browser (Client-Side)
+    fetch(`${API_BASE_URL}/products/index.php`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
       .then((res) => res.json())
       .then((resData) => {
         if (resData && resData.data) {
           const allProducts = resData.data;
 
-          // Filter Produk Promo (diskon > 0), ambil maksimal 4 item (1 baris desktop)
+          // Filter Produk Promo (diskon > 0), ambil maksimal 4 item
           const promo = allProducts
             .filter((p: any) => Number(p.discount_percent || 0) > 0)
             .slice(0, 4);
 
-          // Ambil 4 produk terpopuler/teratas untuk 1 baris
+          // Ambil 4 produk terpopuler/teratas
           const popular = allProducts.slice(0, 4);
 
           setPromoProducts(promo.length > 0 ? promo : allProducts.slice(0, 4));
@@ -43,17 +53,25 @@ export default function HomePage() {
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("Gagal mengambil data produk:", err);
+        setLoading(false);
+      });
 
-    // 2. Fetch Kategori
-    fetch("http://localhost/idvision/backend/api/categories/index.php")
+    // 2. Fetch Kategori dari browser (Client-Side)
+    fetch(`${API_BASE_URL}/categories/index.php`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
       .then((res) => res.json())
       .then((resData) => {
         if (resData && resData.data) {
           setCategories(resData.data);
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error("Gagal mengambil data kategori:", err));
   }, []);
 
   return (

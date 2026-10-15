@@ -1,17 +1,21 @@
 FROM php:8.2-apache
 
-# Install ekstensi PostgreSQL untuk Supabase
+# Install ekstensi PostgreSQL yang dibutuhkan Supabase
 RUN apt-get update && apt-get install -y libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql
 
-# Aktifkan mod_rewrite Apache
+# Aktifkan modul rewrite Apache
 RUN a2enmod rewrite
 
-# Ubah port bawaan Apache dari 80 ke port dari variabel $PORT Railway
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+# Pastikan hanya modul mpm_prefork yang aktif (Mencegah error 'More than one MPM loaded')
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork || true
 
-# Copy seluruh isi proyek
+# Copy seluruh file project ke web root Apache
 COPY . /var/www/html/
+
+# Expose port standar
+EXPOSE 80
 
 # Jalankan Apache
 CMD ["apache2-foreground"]

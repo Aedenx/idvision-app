@@ -1,12 +1,18 @@
 {
-  "functions": {
-    "admin/**/*.php": {
-      "runtime": "vercel-php@0.6.0"
+  "builds": [
+    {
+      "src": "glasses-store-frontend/package.json",
+      "use": "@vercel/next"
     },
-    "backend/**/*.php": {
-      "runtime": "vercel-php@0.6.0"
+    {
+      "src": "admin/**/*.php",
+      "use": "vercel-php@0.6.0"
+    },
+    {
+      "src": "backend/**/*.php",
+      "use": "vercel-php@0.6.0"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/admin/(.*)",
@@ -19,6 +25,10 @@
     {
       "src": "/backend/api/(.*)",
       "dest": "/backend/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/glasses-store-frontend/$1"
     }
   ]
 }

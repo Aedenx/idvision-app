@@ -1,17 +1,18 @@
 <?php
 // backend/config/database.php
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', ''); // Sesuaikan jika MySQL Laragon kamu pakai password
-define('DB_NAME', 'ecommerce_kacamata');
+define('DB_HOST', 'db.pikxqcmqhfXeqanozix.supabase.co');
+define('DB_PORT', '5432');
+define('DB_USER', 'postgres');
+define('DB_PASS', 'Muhammadikhwan1'); // Masukkan password database Supabase Anda di sini
+define('DB_NAME', 'postgres');
 
 function getDbConnection() {
     static $pdo = null;
 
     if ($pdo === null) {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";";
             $options = [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

@@ -11,18 +11,20 @@ export async function GET() {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         Accept: "application/json, text/plain, */*",
+        Referer: "https://ikhwanvision.freedev.app/",
       },
       cache: "no-store",
     });
 
-    if (!res.ok) {
-      return NextResponse.json({ data: [] }, { status: res.status });
+    const responseText = await res.text();
+
+    if (responseText.trim().startsWith("<")) {
+      return NextResponse.json({ status: "error", data: [] }, { status: 403 });
     }
 
-    const data = await res.json();
+    const data = JSON.parse(responseText);
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Proxy Error:", error);
-    return NextResponse.json({ data: [] }, { status: 500 });
+    return NextResponse.json({ status: "error", data: [] }, { status: 500 });
   }
 }

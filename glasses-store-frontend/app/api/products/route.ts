@@ -8,22 +8,37 @@ export async function GET() {
     const res = await fetch(targetUrl, {
       method: "GET",
       headers: {
+        // Menyamarkan request Vercel sebagai Chrome Browser Windows resmi
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         Accept: "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        Referer: "https://ikhwanvision.freedev.app/",
       },
       cache: "no-store",
     });
 
-    if (!res.ok) {
-      return NextResponse.json({ data: [] }, { status: res.status });
+    const responseText = await res.text();
+
+    // Jika InfinityFree mengirimkan HTML Anti-Bot bukannya JSON
+    if (responseText.trim().startsWith("<")) {
+      console.error("Blocked by InfinityFree Anti-Bot Protection HTML");
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Blocked by InfinityFree Anti-Bot Challenge",
+          data: [],
+        },
+        { status: 403 },
+      );
     }
 
-    const data = await res.json();
+    const data = JSON.parse(responseText);
     return NextResponse.json(data);
-  } catch (error) {
-    console.error("Proxy Error:", error);
-    return NextResponse.json({ data: [] }, { status: 500 });
+  } catch (error: any) {
+    console.error("Proxy Fetch Error:", error);
+    return NextResponse.json({ status: "error", data: [] }, { status: 500 });
   }
 }

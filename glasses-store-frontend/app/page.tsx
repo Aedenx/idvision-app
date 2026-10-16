@@ -16,6 +16,15 @@ import RunningText from "@/components/home/running-text";
 import HeroSlider from "@/components/layout/hero-slider";
 import ProductCard from "@/components/product/product-card";
 
+// URL Base Backend (Mengutamakan Env Variable Vercel dengan fallback ke InfinityFree)
+const getApiBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (envUrl && envUrl.startsWith("http")) {
+    return envUrl.replace(/\/+$/, "");
+  }
+  return "https://ikhwanvision.freedev.app/backend/api";
+};
+
 export default function HomePage() {
   const [promoProducts, setPromoProducts] = useState<any[]>([]);
   const [popularProducts, setPopularProducts] = useState<any[]>([]);
@@ -23,59 +32,61 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
+    const baseUrl = getApiBaseUrl();
 
-      try {
-        // 1. Fetch Produk melalui Proxy Internal Next.js
-        const resProd = await fetch("/api/products");
-        if (resProd.ok) {
-          const resData = await resProd.json();
-          const allProducts = resData.data || [];
+    // 1. Fetch Produk dari InfinityFree
+    fetch(`${baseUrl}/products/index.php`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData && resData.data) {
+          const allProducts = resData.data;
 
-          if (Array.isArray(allProducts) && allProducts.length > 0) {
-            // Filter Produk Promo (diskon > 0), maksimal 4 item
-            const promo = allProducts
-              .filter((p: any) => Number(p.discount_percent || 0) > 0)
-              .slice(0, 4);
+          const promo = allProducts
+            .filter((p: any) => Number(p.discount_percent || 0) > 0)
+            .slice(0, 4);
 
-            // Ambil 4 produk terpopuler
-            const popular = allProducts.slice(0, 4);
+          const popular = allProducts.slice(0, 4);
 
-            setPromoProducts(
-              promo.length > 0 ? promo : allProducts.slice(0, 4),
-            );
-            setPopularProducts(popular);
-          }
+          setPromoProducts(promo.length > 0 ? promo : allProducts.slice(0, 4));
+          setPopularProducts(popular);
         }
-
-        // 2. Fetch Kategori melalui Proxy Internal Next.js
-        const resCat = await fetch("/api/categories");
-        if (resCat.ok) {
-          const catData = await resCat.json();
-          if (catData.data) {
-            setCategories(catData.data);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading data via proxy:", err);
-      } finally {
         setLoading(false);
-      }
-    }
+      })
+      .catch((err) => {
+        console.error("Gagal mengambil produk:", err);
+        setLoading(false);
+      });
 
-    loadData();
+    // 2. Fetch Kategori dari InfinityFree
+    fetch(`${baseUrl}/categories/index.php`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData && resData.data) {
+          setCategories(resData.data);
+        }
+      })
+      .catch((err) => console.error("Gagal mengambil kategori:", err));
   }, []);
 
   return (
     <main className="min-h-screen bg-white text-zinc-900 dark:bg-black dark:text-white pb-16 space-y-12 transition-colors duration-300">
-      {/* 1. HERO SLIDER BANNER PROMO */}
+      {/* HERO SLIDER BANNER PROMO */}
       <HeroSlider />
 
-      {/* 2. RUNNING TEXT PROMO MARQUEE */}
+      {/* RUNNING TEXT PROMO MARQUEE */}
       <RunningText />
 
-      {/* 3. KATEGORI PILIHAN */}
+      {/* KATEGORI PILIHAN */}
       <section className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="mb-6 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
@@ -142,7 +153,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. PROMO SPESIAL (1 BARIS DISKON) */}
+      {/* PROMO SPESIAL */}
       <section className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="mb-6 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
@@ -178,7 +189,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* 5. KOLEKSI KACAMATA TERPOPULER (1 BARIS TERLARIS) */}
+      {/* KOLEKSI TERPOPULER */}
       <section className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="mb-6 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
@@ -218,7 +229,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* 6. BANNER KEUNGGULAN IDVISION */}
+      {/* BANNER KEUNGGULAN */}
       <section className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="rounded-3xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-black p-8 md:p-12">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
